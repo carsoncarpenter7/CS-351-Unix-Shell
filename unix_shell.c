@@ -17,7 +17,6 @@ int main(int argc, const char *argv[])
     char input[BUFSIZ];
     char last_command[BUFSIZ];
     char *command[BUFSIZ];
-
     bool finished = false;
     bool complete = false;
     bool is_pipe = false;
@@ -26,7 +25,7 @@ int main(int argc, const char *argv[])
     //Set buffer to value
     memset(input, 0, BUFSIZ * sizeof(char));
     memset(last_command, 0, BUFSIZ * sizeof(char));
-
+    // Handles =  "<", ">", and "|"
     while (!finished)
     {
         if (concur)
@@ -38,7 +37,7 @@ int main(int argc, const char *argv[])
             printf("osh> ");
         fflush(stdout);
 
-        // get user input
+        // get user input into stdin
         if (*(fgets(input, BUFSIZ, stdin)) == '\n')
         {
             fprintf(stderr, "No command\n");
@@ -151,7 +150,7 @@ int main(int argc, const char *argv[])
 
         // fork
         pid = fork();
-
+        // Invalid Commands check
         if (pid < 0)
         {
             fprintf(stderr, "Fork Failed");
