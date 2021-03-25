@@ -1,14 +1,17 @@
+// unix_shell.c
+// gcc unix-shell.c -o unix_shell
+//
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define MAXARGS 10
-
+// MAIN
 int main(int argc, const char *argv[])
 {
     char input[BUFSIZ];
@@ -16,10 +19,11 @@ int main(int argc, const char *argv[])
     char *command[BUFSIZ];
 
     bool finished = false;
-    bool concur = false;
+    bool complete = false;
     bool is_pipe = false;
     pid_t pid;
-
+    
+    //Set buffer to value
     memset(input, 0, BUFSIZ * sizeof(char));
     memset(last_command, 0, BUFSIZ * sizeof(char));
 
@@ -82,7 +86,7 @@ int main(int argc, const char *argv[])
         command[i] = NULL;
 
         // input for file input/output
-        concur = (strncmp(command[i - 1], "&", 1) == 0);
+        complete = (strncmp(command[i - 1], "&", 1) == 0);
 
         bool out = false;
         bool in = false;
@@ -155,7 +159,7 @@ int main(int argc, const char *argv[])
         }
         else if (pid == 0)
         {
-            if (concur && (!out || !in))
+            if (complete && (!out || !in))
                 command[i - 1] = NULL;
 
             if (out)
@@ -171,7 +175,7 @@ int main(int argc, const char *argv[])
                 dup2(fd_in, STDIN_FILENO);
                 close(fd_in);
             }
-
+            // dup2 
             if (is_pipe)
             {
                 dup2(fd_pipe[1], STDOUT_FILENO);
@@ -207,7 +211,7 @@ int main(int argc, const char *argv[])
             }
             else
             {
-                if (!concur)
+                if (!complete)
                     wait(NULL);
                 else
                     signal(SIGCHLD, SIG_IGN);
