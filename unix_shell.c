@@ -28,10 +28,10 @@ int main(int argc, const char *argv[])
     // Handles =  "<", ">", and "|"
     while (!finished)
     {
-        if (concur)
+        if (complete)
         {
             printf(" ");
-            concur = false;
+            complete = false;
         }
         else
             printf("osh> ");
@@ -160,7 +160,7 @@ int main(int argc, const char *argv[])
         {
             if (complete && (!out || !in))
                 command[i - 1] = NULL;
-
+            // dup2 
             if (out)
             {
                 int fd_out = creat(out_filename, 0644);
@@ -174,7 +174,7 @@ int main(int argc, const char *argv[])
                 dup2(fd_in, STDIN_FILENO);
                 close(fd_in);
             }
-            // dup2 
+            
             if (is_pipe)
             {
                 dup2(fd_pipe[1], STDOUT_FILENO);
