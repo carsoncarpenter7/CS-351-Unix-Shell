@@ -52,7 +52,7 @@ int main(int argc, const char *argv[])
         // * (3) parent will invoke wait() unless command included &
         //  return 0;
 
-        // input parsing
+        // input parsing, return proper command
         if (strncmp(input, "!!", 2) == 0)
         {
             if (strlen(last_command) == 0)
