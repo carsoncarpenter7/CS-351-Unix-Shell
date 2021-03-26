@@ -20,13 +20,11 @@ int main(int argc, const char *argv[])
     char input[BUFSIZ];
     char last_command[BUFSIZ];
     char *command[BUFSIZ];
-
     //Keep command line going conditions
     bool finished = false;
     bool concurrently = false;
     bool is_pipe = false;
     pid_t pid;
-
     //Set buffer to value
     memset(input, 0, BUFSIZ * sizeof(char));
     memset(last_command, 0, BUFSIZ * sizeof(char));
@@ -46,7 +44,7 @@ int main(int argc, const char *argv[])
         // get user input into stdin
         if (*(fgets(input, BUFSIZ, stdin)) == '\n')
         {
-            fprintf(stderr, "No command\n");
+            fprintf(stderr, "Error retry command\n");
             exit(1);
         }
 
@@ -57,7 +55,6 @@ int main(int argc, const char *argv[])
         // * (2) the child process will invoke execvp()
         // * (3) parent will invoke wait() unless command included &
         //  return 0;
-
         // input parsing, return proper command
         if (strncmp(input, "!!", 2) == 0)
         {
@@ -83,51 +80,48 @@ int main(int argc, const char *argv[])
         char *parse;
         i = 0;
         parse = strtok(input, break_chars);
-
         while (parse != NULL)
         {
             command[i++] = parse;
             parse = strtok(NULL, break_chars);
         }
         command[i] = NULL;
-
         // input for file input/output
         concurrently = (strncmp(command[i - 1], "&", 1) == 0);
-        
         // Files Read and Write Conditions (DONT MOVE)
-        bool out = false;
-        bool in = false;
+        bool outfile = false;
+        bool infile = false;
         char *in_filename;
         char *out_filename;
-        int c = 0;
-
+        //check handles
+        int temp = 0;
         for (int j = 0; j < i; ++j)
         {
             if (strncmp(command[j], ">", 1) == 0)
             {
-                out = true;
+                outfile = true;
                 out_filename = command[j + 1];
-                if (c == 0)
-                    c = j;
+                if (temp == 0)
+                    temp = j;
             }
             else if (strncmp(command[j], "<", 1) == 0)
             {
-                in = true;
+                infile = true;
                 in_filename = command[j + 1];
-                if (c == 0)
-                    c = j;
+                if (temp == 0)
+                    temp = j;
             }
         }
 
-        if (c > 0)
+        if (temp > 0)
         {
-            command[c] = NULL;
+            command[temp] = NULL;
             i = c;
         }
 
-        // parsing for pipe
+        // parsing for pipe 
         char *command2[BUFSIZ];
-        int n = 0;
+        int handle = 0;
         int fd_pipe[2];
         pid_t pid2;
 
@@ -136,18 +130,18 @@ int main(int argc, const char *argv[])
             if (strncmp(command[j], "|", 1) == 0)
             {
                 is_pipe = true;
-                n = j;
+                handle = j;
             }
         }
 
         if (is_pipe)
         {
-            int m = 0;
-            for (int j = n + 1; j < i; ++j, ++m)
+            int k = 0;
+            for (int j = handle + 1; j < i; ++j, ++k)
             {
-                command2[m] = command[j];
+                command2[k] = command[j];
             }
-            command[n] = NULL;
+            command[handle] = NULL;
 
             if (pipe(fd_pipe) != 0)
             {
@@ -166,17 +160,17 @@ int main(int argc, const char *argv[])
         }
         else if (pid == 0)
         {
-            if (concurrently && (!out || !in))
+            if (concurrently && (!outfile || !infile))
                 command[i - 1] = NULL;
 
-            if (out)
+            if (outfile)
             {
                 int fd_out = creat(out_filename, 0644);
                 dup2(fd_out, STDOUT_FILENO);
                 close(fd_out);
             }
 
-            if (in)
+            if (infile)
             {
                 int fd_in = open(in_filename, O_RDONLY);
                 dup2(fd_in, STDIN_FILENO);
