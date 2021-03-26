@@ -14,13 +14,21 @@
 // MAIN
 int main(int argc, const char *argv[])
 {
+    // Initize Arrays 
+    // Current Input and Last command
     char input[BUFSIZ];
     char last_command[BUFSIZ];
     char *command[BUFSIZ];
+    //Keep commandline going
     bool finished = false;
     bool complete = false;
     bool is_pipe = false;
     pid_t pid;
+    // Files Read and Write Conditions
+    bool out = false;
+    bool in = false;
+    char *in_filename;
+    char *out_filename;
     
     //Set buffer to value
     memset(input, 0, BUFSIZ * sizeof(char));
@@ -87,10 +95,6 @@ int main(int argc, const char *argv[])
         // input for file input/output
         complete = (strncmp(command[i - 1], "&", 1) == 0);
 
-        bool out = false;
-        bool in = false;
-        char *in_filename;
-        char *out_filename;
         int c = 0;
 
         for (int j = 0; j < i; ++j)
