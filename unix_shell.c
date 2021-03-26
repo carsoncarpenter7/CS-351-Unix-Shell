@@ -91,7 +91,7 @@ int main(int argc, const char *argv[])
         bool in = false;
         char *in_filename;
         char *out_filename;
-        int k = 0;
+        int c = 0;
 
         for (int j = 0; j < i; ++j)
         {
@@ -99,22 +99,22 @@ int main(int argc, const char *argv[])
             {
                 out = true;
                 out_filename = command[j + 1];
-                if (k == 0)
-                    k = j;
+                if (c == 0)
+                    c = j;
             }
             else if (strncmp(command[j], "<", 1) == 0)
             {
                 in = true;
                 in_filename = command[j + 1];
-                if (k == 0)
-                    k = j;
+                if (c == 0)
+                    c = j;
             }
         }
 
-        if (k > 0)
+        if (c > 0)
         {
-            command[k] = NULL;
-            i = k;
+            command[c] = NULL;
+            i = c;
         }
 
         // parsing for pipe
