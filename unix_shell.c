@@ -11,7 +11,15 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+
+// Outline of simple shell.
+//1. Creating the child process and executing the command in the child
+//2. Providing a history feature
+//3. Adding support of input and output redirection
+//4. Allowing the parent and child processes to communicate via a pipe
+
 #define MAXARGS 10
+
 //============ MAIN ===================
 int main(int argc, const char *argv[])
 {
@@ -86,13 +94,16 @@ int main(int argc, const char *argv[])
             parse = strtok(NULL, break_chars);
         }
         command[i] = NULL;
+        
         // input for file input/output
         concurrently = (strncmp(command[i - 1], "&", 1) == 0);
+        
         // Files Read and Write Conditions (DONT MOVE)
         bool outfile = false;
         bool infile = false;
         char *in_filename;
         char *out_filename;
+        
         //check handles
         int temp = 0;
         for (int j = 0; j < i; ++j)
@@ -120,7 +131,7 @@ int main(int argc, const char *argv[])
         }
 
         // parsing for pipe 
-        char *command2[BUFSIZ];
+        char *nextcommand[BUFSIZ];
         int handle = 0;
         int fd_pipe[2];
         pid_t pid2;
@@ -139,7 +150,7 @@ int main(int argc, const char *argv[])
             int k = 0;
             for (int j = handle + 1; j < i; ++j, ++k)
             {
-                command2[k] = command[j];
+                nextcommand[k] = command[j];
             }
             command[handle] = NULL;
 
@@ -202,7 +213,7 @@ int main(int argc, const char *argv[])
                     dup2(fd_pipe[0], STDIN_FILENO);
                     close(fd_pipe[0]);
                     close(fd_pipe[1]);
-                    execvp(command2[0], command2);
+                    execvp(nextcommand[0], nextcommand);
                 }
                 else
                 {
@@ -220,12 +231,9 @@ int main(int argc, const char *argv[])
                     signal(SIGCHLD, SIG_IGN);
             }
         }
-
         printf("\n");
     }
-
     printf("osh exited\n");
-
     return 0;
 }
 // OUTPUTS
